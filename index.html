@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Anime Randomizer</title>
+  <meta name="description" content="Pull a random anime image with its series and character name. Save favorites and revisit your recent history.">
+  <meta name="theme-color" content="#07060f">
+  <meta name="color-scheme" content="dark">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&display=swap">
+  <link rel="stylesheet" href="css/styles.css">
+  <script type="module" src="js/app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#generator">Skip to generator</a>
+  <div class="backdrop" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <a class="brand" href="#top" aria-label="Anime Randomizer, back to top">
+      <svg class="brand__mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+        <path d="M16 3 28 10v12L16 29 4 22V10z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M12 12h8v8h-8z" fill="currentColor"/>
+      </svg>
+      <span>Anime Randomizer</span>
+    </a>
+    <nav class="site-nav" aria-label="Page sections">
+      <a href="#favorites">Favorites <span class="count" id="favorites-count">0</span></a>
+      <a href="#history">History</a>
+    </nav>
+  </header>
+
+  <main id="top" class="page">
+    <noscript><p class="empty">JavaScript is required to generate images.</p></noscript>
+
+    <section id="generator" class="generator" aria-labelledby="generator-title">
+      <h1 id="generator-title" class="title">Random anime, one tap at a time</h1>
+      <p class="subtitle">Pull an image with its series and character. Save the ones you like.</p>
+
+      <article class="card" id="card" data-state="idle" aria-busy="false">
+        <div class="card__frame">
+          <div class="panel panel--idle">
+            <svg class="icon panel__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2l2.2 6.3 6.3 2.2-6.3 2.2L12 19l-2.2-6.3L3.5 10.5l6.3-2.2z"/></svg>
+            <p class="panel__text">Nothing here yet. Tap Generate Random Anime to load your first image.</p>
+          </div>
+
+          <div class="panel panel--loading">
+            <div class="skeleton" aria-hidden="true"></div>
+            <div class="spinner" aria-hidden="true"></div>
+            <p>Loading image</p>
+          </div>
+
+          <div class="panel panel--error" role="alert">
+            <p class="panel__title">Couldn't load an image</p>
+            <p class="panel__text" id="error-message">Something went wrong. Retry to try again.</p>
+            <button class="btn btn--ghost" id="retry-button" type="button">Retry</button>
+          </div>
+
+          <figure class="result">
+            <img class="result__echo" id="result-echo" alt="" aria-hidden="true" decoding="async">
+            <img class="result__image" id="result-image" alt="" decoding="async" fetchpriority="high">
+          </figure>
+        </div>
+
+        <div class="card__body">
+          <dl class="meta">
+            <div>
+              <dt>Series</dt>
+              <dd class="meta__series" id="series-name">-</dd>
+            </div>
+            <div>
+              <dt>Character</dt>
+              <dd class="meta__character" id="character-name">-</dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="card__actions">
+          <button class="btn btn--primary" id="generate-button" type="button">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2l2.2 6.3 6.3 2.2-6.3 2.2L12 19l-2.2-6.3L3.5 10.5l6.3-2.2z"/></svg>
+            <span id="generate-label">Generate Random Anime</span>
+          </button>
+          <button class="btn btn--ghost" id="save-button" type="button" hidden>
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            <span id="save-label">Save Favorite</span>
+          </button>
+        </div>
+      </article>
+
+      <p class="sr-only" id="live-status" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="collection" id="favorites" aria-labelledby="favorites-title">
+      <div class="collection__head">
+        <h2 id="favorites-title" tabindex="-1">Favorites</h2>
+      </div>
+      <p class="empty" id="favorites-empty">No favorites yet. Tap Save Favorite on an image and it will appear here.</p>
+      <ul class="grid" id="favorites-list" hidden></ul>
+    </section>
+
+    <section class="collection" id="history" aria-labelledby="history-title">
+      <div class="collection__head">
+        <h2 id="history-title" tabindex="-1">Recently generated</h2>
+        <button class="link-btn" id="clear-history" type="button" hidden>Clear history</button>
+      </div>
+      <p class="empty" id="history-empty">Images you generate will show up here.</p>
+      <ul class="strip" id="history-list" hidden></ul>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Images come from a third-party API. Only SFW content is intended.</p>
+  </footer>
+
+  <div class="toast-region" id="toast-region" role="status" aria-live="polite"></div>
+
+  <template id="thumb-template">
+    <li class="thumb">
+      <button class="thumb__open" type="button">
+        <img class="thumb__image" loading="lazy" decoding="async" alt="">
+        <span class="thumb__caption">
+          <strong class="thumb__series"></strong>
+          <span class="thumb__character"></span>
+        </span>
+      </button>
+      <button class="thumb__remove" type="button">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+    </li>
+  </template>
+</body>
+</html>
